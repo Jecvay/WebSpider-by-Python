@@ -3,8 +3,10 @@ from html.parser import HTMLParser
 import urllib.request
 import urllib.parse
 import urllib
+import http.cookiejar
 
 _ljwLT = ''
+_ljwURL = ''
 
 class MyHTMLParser(HTMLParser):
     def handle_starttag(self, tag, attrs):
@@ -19,6 +21,14 @@ class MyHTMLParser(HTMLParser):
                     print('name=', name, '  value=', value)
                     find = True
 
+class GetHref(HTMLParser):
+    def handle_starttag(self, tag, attrs):
+        global _ljwURL
+        find = False
+        for name, value in attrs:
+            if name == 'href':
+                print('name=', name, '  value=', value)
+                _ljwURL = value
 
 
 def saveFile(data):
@@ -27,23 +37,23 @@ def saveFile(data):
     f_obj.write(data)
     f_obj.close()
 
+
 # /////////////////////// main ////////////////////////
 
 
-
+######################## GET
 
 urla = 'http://cas.nwpu.edu.cn/cas/login?service=http%3A%2F%2Fportal.nwpu.edu.cn%2Fdcp%2Findex.jsp'
 
-opener = urllib.request.build_opener()
-opener.addheaders = [('User-agent', 'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.63 Safari/537.36')]
-urlaopen = opener.open(urla)
+urlarequest = urllib.request.Request(urla, headers = {
+    'User-agent': 'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.63 Safari/537.36'
+})
+urlaopen = urllib.request.urlopen(urlarequest)
 dataa = urlaopen.read()
-
 hparser = MyHTMLParser()
-# print(dataa.decode())
 hparser.feed(dataa.decode())
 
-#############################
+######################## POST
 url = 'http://cas.nwpu.edu.cn/cas/login'
 
 header = {
@@ -72,20 +82,63 @@ postDict['lt'] = _ljwLT
 
 postData = urllib.parse.urlencode(postDict)
 postData = postData.encode('utf-8')
-# print(postData)
-
-full_url = urllib.request.Request(url, postData, header)
-
-try:
-    response = urllib.request.urlopen(full_url)
-    data = response.read()
-    saveFile(data)
-#    print(data.decode())
 
 
-except HTTPError as e:
-    print('Error code: ', e.code)
-except URLError as e:
-    print('Reason: ', e.reason)
-    the_page = response.read()
-    print(the_page)
+cj = http.cookiejar.CookieJar()
+opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cj))
+head = []
+for key, value in header.items():
+    tmp = (key, value)
+    head.append(tmp)
+print(head)
+opener.addheaders = head
+response = opener.open(url, postData)
+data = response.read()
+
+######################## JUMP
+hparser = GetHref(convert_charrefs=True)
+hparser.feed(data.decode('gb2312'))
+print(_ljwURL)
+urla = _ljwURL
+urlarequest = urllib.request.Request(urla, headers = {
+    'User-agent': 'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.63 Safari/537.36'
+})
+urlaopen = urllib.request.urlopen(urlarequest)
+dataa = urlaopen.read()
+print(dataa.decode())
+
+
+####################### 此处需要Cookies
+urla = 'http://portal.nwpu.edu.cn/dcp/forward.action?path=/portal/portal&p=wkHomePage'
+
+urlaopen = opener.open(urla)
+dataa = urlaopen.read()
+print(dataa.decode('gb2312'))
+hparser.feed(dataa.decode('gb2312'))
+print(_ljwURL)
+
+urla = _ljwURL
+urlaopen = opener.open(urla)
+dataa = urlaopen.read()
+print(dataa.decode())
+saveFile(dataa)
+
+
+urla = 'http://cas.nwpu.edu.cn/cas/login?service=http%3A%2F%2F222.24.192.69%2FmhLogin.jsp'
+urlaopen = opener.open(urla)
+dataa = urlaopen.read()
+print(dataa.decode('gb2312'))
+hparser.feed(dataa.decode('gb2312'))
+print(_ljwURL)
+
+urla = _ljwURL
+urlaopen = opener.open(urla)
+dataa = urlaopen.read()
+print(dataa.decode('gb2312'))
+
+
+urla = 'http://222.24.192.69/gradeLnAllAction.do?type=ln&oper=fainfo&fajhh=4308'
+urlaopen = opener.open(urla)
+dataa = urlaopen.read()
+print(dataa.decode('gb2312'))
+saveFile(dataa)
