@@ -71,8 +71,8 @@ postDict = {
     'service'	:'http://portal.nwpu.edu.cn/dcp/index.jsp',
     'serviceName':	'null',
     'loginErrCnt'	:'0',
-    'username'	:'2012303505',
-    'password'	:'bcdljw38',
+    'username'	:'xxxxxxxx',
+    'password'	:'yyyyyyyy',
     'lt'	:'LT_nwpuapp1_-576204-cpccvEbkegnqKOrJ8j9t'
 }
 
