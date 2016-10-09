@@ -14,6 +14,11 @@ class LoginManagerBase:
         self.url_root = None
         self.url_start = None
         self.login = lambda: (_ for _ in ()).throw(Exception("LoginManager.login not define"))
+        self._session = None
+
+    @property
+    def session(self):
+        return self._session
 
     @abc.abstractmethod
     def _login_by_post(self):

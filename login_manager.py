@@ -4,6 +4,7 @@ from login_manager_base import LoginManagerBase
 from utils.singleton import singleton
 import requests
 import config
+import logging
 
 
 @singleton
@@ -14,14 +15,9 @@ class ZhihuLoginManager(LoginManagerBase):
 
     def __init__(self):
         super().__init__()
-        self.url_root = 'www.zhihu.com'
+        self.url_root = 'https://www.zhihu.com'
         self.url_start = ''
         self.cookie = {}
-        self._session = None
-
-    @property
-    def session(self):
-        return self._session
 
     def _login_by_post(self):
         pass
@@ -32,7 +28,7 @@ class ZhihuLoginManager(LoginManagerBase):
                 1. 在浏览器控制台中执行 console.log(document.cookie)
                 2. 找到 z_c0 & login 两部分复制过来
         """
-        print("login_by_cookie !!")
+        logging.info('login by cookie')
         self.cookie['login'] = config.ZHIHU_COOKIE_LOGIN
         self.cookie['z_c0'] = config.ZHIHU_COOKIE_Z0
         cookie_jar = requests.utils.cookiejar_from_dict(self.cookie)
@@ -42,6 +38,8 @@ class ZhihuLoginManager(LoginManagerBase):
 
 
 if __name__ == '__main__':
+
+    # 测试登录知乎
     login_manager = ZhihuLoginManager()
     login_manager.set_login_method('cookie')
     login_manager.login()
