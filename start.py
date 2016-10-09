@@ -1,8 +1,11 @@
 # coding=utf-8
 
-from utils.singleton import singleton
 import logging
-from login_manager import ZhihuLoginManager
+import config
+
+from utils.singleton import singleton
+from zhihu.login_manager import ZhihuLoginManager
+from zhihu.relation_spider import RelationSpider
 
 
 @singleton
@@ -28,6 +31,7 @@ class Launcher:
         self.login_manager = ZhihuLoginManager()
         self.login_manager.set_login_method('cookie')
         self.log = logging.getLogger(__name__)
+        self.thread_list = []
 
     @property
     def session(self):
@@ -35,9 +39,15 @@ class Launcher:
 
     def run(self):
         self.login_manager.login()
-        res = self.session.get(self.login_manager.url_root)
-        print(res.text)
+        if self.session:
+            # 成功登录
+            self.log.info("Login Zhihu success!")
+            for i in range(0, config.ZHIHU_RELATION_THREAD_NUMBER):
+                self.thread_list.append(RelationSpider())
+
+            for thread in self.thread_list:
+                thread.run()
 
 if __name__ == '__main__':
     launcher = Launcher()
-    launcher.log.info("haha")
+    launcher.run()

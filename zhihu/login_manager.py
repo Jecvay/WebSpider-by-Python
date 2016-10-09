@@ -18,6 +18,7 @@ class ZhihuLoginManager(LoginManagerBase):
         self.url_root = 'https://www.zhihu.com'
         self.url_start = ''
         self.cookie = {}
+        self.log = logging.getLogger(__name__)
 
     def _login_by_post(self):
         pass
@@ -28,13 +29,18 @@ class ZhihuLoginManager(LoginManagerBase):
                 1. 在浏览器控制台中执行 console.log(document.cookie)
                 2. 找到 z_c0 & login 两部分复制过来
         """
-        logging.info('login by cookie')
+        self.log.info('login by cookie')
         self.cookie['login'] = config.ZHIHU_COOKIE_LOGIN
         self.cookie['z_c0'] = config.ZHIHU_COOKIE_Z0
         cookie_jar = requests.utils.cookiejar_from_dict(self.cookie)
         self._session = requests.Session()
         self._session.headers['User-Agent'] = config.USER_AGENT
         self._session.cookies = cookie_jar
+        if not self._check_connection():
+            self._session = None
+
+    def _check_connection(self):
+        return True
 
 
 if __name__ == '__main__':
